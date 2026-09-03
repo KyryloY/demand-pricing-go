@@ -21,7 +21,7 @@ run-api:
 	DATABASE_URL=$(DATABASE_URL) $(GO) run ./cmd/api
 
 seed:
-	$(GO) run ./cmd/seed
+	DATABASE_URL=$(DATABASE_URL) $(GO) run ./cmd/seed --load-db
 
 ingest:
 	DATABASE_URL=$(DATABASE_URL) $(GO) run ./cmd/ingest --file ./db/seeds/daily_sales.csv
