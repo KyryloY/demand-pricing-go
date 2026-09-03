@@ -33,7 +33,8 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
-    command: ["/seed", "--load-db", "--database-url", "postgres://pricing:pricing@postgres:5432/pricing?sslmode=disable"]
+    entrypoint: ["/seed"]
+    command: ["--skip-csv", "--load-db", "--database-url", "postgres://pricing:pricing@postgres:5432/pricing?sslmode=disable"]
     depends_on:
       postgres:
         condition: service_healthy

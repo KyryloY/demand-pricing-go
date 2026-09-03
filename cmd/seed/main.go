@@ -18,22 +18,25 @@ func main() {
 	outPath := flag.String("csv-out", "./db/seeds/daily_sales.csv", "path for the generated daily sales CSV")
 	databaseURL := flag.String("database-url", envOr("DATABASE_URL", ""), "optional PostgreSQL connection URL for catalog loading")
 	loadDatabase := flag.Bool("load-db", false, "load stores, products, promotions, and inventory into PostgreSQL")
+	skipCSV := flag.Bool("skip-csv", false, "skip writing the generated sales CSV")
 	flag.Parse()
 
-	if err := os.MkdirAll(filepath.Dir(*outPath), 0o755); err != nil {
-		fmt.Fprintf(os.Stderr, "create seed directory: %v\n", err)
-		os.Exit(1)
-	}
-	file, err := os.Create(*outPath)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "create seed CSV: %v\n", err)
-		os.Exit(1)
-	}
-	defer file.Close()
+	if !*skipCSV {
+		if err := os.MkdirAll(filepath.Dir(*outPath), 0o755); err != nil {
+			fmt.Fprintf(os.Stderr, "create seed directory: %v\n", err)
+			os.Exit(1)
+		}
+		file, err := os.Create(*outPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "create seed CSV: %v\n", err)
+			os.Exit(1)
+		}
+		defer file.Close()
 
-	if err := seed.Generate(file, time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)); err != nil {
-		fmt.Fprintf(os.Stderr, "generate seed CSV: %v\n", err)
-		os.Exit(1)
+		if err := seed.Generate(file, time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)); err != nil {
+			fmt.Fprintf(os.Stderr, "generate seed CSV: %v\n", err)
+			os.Exit(1)
+		}
 	}
 	if *loadDatabase {
 		if *databaseURL == "" {
