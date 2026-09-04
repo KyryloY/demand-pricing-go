@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: pricing
+          POSTGRES_USER: pricing
+          POSTGRES_PASSWORD: pricing
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pricing -d pricing"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.x'
+      - run: go mod tidy && git diff --exit-code -- go.mod go.sum
+      - run: test -z "$(gofmt -l .)"
+      - run: go vet ./...
+      - run: go test ./...
+        env:
+          INTEGRATION_DATABASE_URL: postgres://pricing:pricing@localhost:5432/pricing?sslmode=disable
+      - run: docker build -f deploy/Dockerfile .
